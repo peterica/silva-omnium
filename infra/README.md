@@ -53,8 +53,8 @@ docker compose logs -f code-server
 docker compose logs -f caddy
 
 # 호스트 로그 (watcher / ollama)
-tail -f /var/log/silva-omnium/ingest-watcher.log
-tail -f /var/log/silva-omnium/ollama.log
+tail -f ~/Library/Logs/silva-omnium/ingest-watcher.log
+tail -f ~/Library/Logs/silva-omnium/ollama.log
 ```
 
 ### 컨테이너 재시작
@@ -141,5 +141,5 @@ launchctl load ~/Library/LaunchAgents/com.silva-omnium.ollama.plist       # inge
   - `infra/.env` 존재 + 경로 절대 경로인지 확인
   - 명시적: `docker compose --env-file ../.env up`
 - **Watcher 가 동작 안 함**:
-  - `tail -f /var/log/silva-omnium/ingest-watcher.log` — `FATAL: docker not installed` 등 표시
+  - `tail -f ~/Library/Logs/silva-omnium/ingest-watcher.log` — `FATAL: docker not installed` 등 표시
   - launchctl: `launchctl list com.silva-omnium.ingest-watcher`

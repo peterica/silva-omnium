@@ -14,7 +14,7 @@ set -euo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 USER_NAME="$(id -un)"
 HOME_DIR="$HOME"
-LOG_DIR="/var/log/silva-omnium"
+LOG_DIR="$HOME_DIR/Library/Logs/silva-omnium"
 ENV_FILE="$REPO/infra/.env"
 
 say() { printf '\n\033[1;32m==> %s\033[0m\n' "$*"; }
@@ -60,6 +60,9 @@ for i in {1..30}; do
     sleep 1
 done
 
+# ---------- log directory (사용자 영역, sudo 불필요) — 다른 단계 전에 ----------
+mkdir -p "$LOG_DIR"
+
 # ---------- ollama: 호스트 외부 인터페이스 LISTEN ----------
 say "4/7  ollama 외부 인터페이스 LISTEN 설정 (컨테이너에서 host.docker.internal 으로 접근 가능)"
 mkdir -p "$HOME_DIR/Library/LaunchAgents"
@@ -101,13 +104,10 @@ EOF
     say "    ollama plist 생성"
 fi
 
-# ---------- log directory ----------
-say "5/7  log directory"
-sudo mkdir -p "$LOG_DIR"
-sudo chown "$USER_NAME":staff "$LOG_DIR"
+# ---------- (5/7 단계 통합 — log dir 은 위에서 미리 생성) ----------
 
 # ---------- .env (비밀번호 자동 생성) ----------
-say "6/7  infra/.env (비밀번호 자동 생성)"
+say "5/6  infra/.env (비밀번호 자동 생성)"
 if [[ -f "$ENV_FILE" ]]; then
     warn "$ENV_FILE 이미 존재 — 보존. 비밀번호 변경하려면 파일 삭제 후 재실행"
 else
@@ -122,7 +122,7 @@ EOF
 fi
 
 # ---------- docker compose + launchd ----------
-say "7/7  docker compose up + launchd 등록"
+say "6/6  docker compose up + launchd 등록"
 
 # 1) Ollama launchd (외부 인터페이스 listen 적용)
 launchctl unload "$OLLAMA_PLIST" 2>/dev/null || true

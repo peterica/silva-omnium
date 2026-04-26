@@ -14,9 +14,9 @@
     <key>KeepAlive</key>
     <true/>
     <key>StandardOutPath</key>
-    <string>/var/log/silva-omnium/ingest-watcher-launchd.log</string>
+    <string>__HOME__/Library/Logs/silva-omnium/ingest-watcher-launchd.log</string>
     <key>StandardErrorPath</key>
-    <string>/var/log/silva-omnium/ingest-watcher-launchd.err</string>
+    <string>__HOME__/Library/Logs/silva-omnium/ingest-watcher-launchd.err</string>
     <key>EnvironmentVariables</key>
     <dict>
         <key>SILVA_REPO</key>
