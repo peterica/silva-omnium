@@ -21,6 +21,8 @@ services:
     restart: unless-stopped
     volumes:
       - ${SILVA_REPO:?SILVA_REPO must be set in infra/.env}:/workspace
+      # Linux 바이너리(rollup 등) 가 호스트 macOS 와 충돌하지 않도록 격리
+      - silva-node-modules:/workspace/web/node_modules
     environment:
       - PASSWORD=${SILVA_CODE_SERVER_PASSWORD:?SILVA_CODE_SERVER_PASSWORD must be set in infra/.env}
       - BIND_ADDR=0.0.0.0:8080
@@ -56,3 +58,4 @@ networks:
 volumes:
   silva-caddy-data:
   silva-caddy-config:
+  silva-node-modules:

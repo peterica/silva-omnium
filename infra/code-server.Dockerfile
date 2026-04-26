@@ -13,8 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         make git \
     && rm -rf /var/lib/apt/lists/*
 
-# Node 20 (NodeSource 공식 저장소)
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+# Node 22 (Astro 6 가 ≥22.12 요구; NodeSource 공식 저장소)
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
