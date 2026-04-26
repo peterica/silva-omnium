@@ -8,9 +8,16 @@
 }
 
 :80 {
-	# code-server: VS Code in browser (Docker 네트워크 DNS)
-	handle /edit/* {
-		reverse_proxy code-server:8080
+	# code-server: VS Code in browser
+	# handle_path 가 /edit 접두를 strip → code-server 는 자기가 root 인 줄 안다.
+	# X-Forwarded-Prefix 로 code-server 가 생성하는 redirect/link 가 /edit/... 로
+	# 다시 뒤에 붙도록 알려준다.
+	handle_path /edit/* {
+		reverse_proxy code-server:8080 {
+			header_up X-Forwarded-Proto https
+			header_up X-Forwarded-Host {host}
+			header_up X-Forwarded-Prefix /edit
+		}
 	}
 	handle /edit {
 		redir /edit/ permanent
