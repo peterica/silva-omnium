@@ -23,6 +23,16 @@ COPY scripts/requirements.txt /tmp/requirements.txt
 RUN python3 -m pip install --break-system-packages --no-cache-dir -r /tmp/requirements.txt \
     && rm /tmp/requirements.txt
 
+# macOS 호스트 사용자 UID 501 과 일치시켜 bind mount 파일 양방향 쓰기 권한 확보.
+# 베이스 이미지의 coder 사용자(UID 1000) 를 501 로 재설정하고 home 권한도 갱신.
+# (debian 에서 UID 501 은 보통 비어있음 — 충돌 시 502 시도)
+RUN if id -u 501 >/dev/null 2>&1; then \
+        usermod -u 502 coder; \
+    else \
+        usermod -u 501 coder; \
+    fi \
+    && chown -R coder:coder /home/coder
+
 USER coder
 WORKDIR /workspace
 
