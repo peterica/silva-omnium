@@ -1,4 +1,5 @@
 import json
+import os
 import urllib.error
 import urllib.request
 
@@ -8,11 +9,12 @@ from .base import LLMProvider, ProviderError
 class OllamaProvider(LLMProvider):
     def __init__(
         self,
-        model: str = "gemma4:latest",
-        host: str = "http://localhost:11434",
+        model: str | None = None,
+        host: str | None = None,
         timeout: int = 300,
     ):
-        self.model = model
+        self.model = model or os.environ.get("OLLAMA_MODEL", "gemma4:latest")
+        host = host or os.environ.get("OLLAMA_HOST", "http://localhost:11434")
         self.endpoint = f"{host.rstrip('/')}/api/generate"
         self.timeout = timeout
 
