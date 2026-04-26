@@ -13,6 +13,9 @@ __pycache__/
 .venv/
 venv/
 
+# Make / build artifacts
+*.tmp
+
 # Node (Astro 추가 시)
 node_modules/
 .astro/

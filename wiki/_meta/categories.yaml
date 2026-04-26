@@ -1,0 +1,7 @@
+# Claude/Ollama 가 ingest 중 append. 수동 편집·리네이밍 가능.
+# 형식:
+#   <slug>:
+#     title: 사람이 읽는 이름
+#     description: 한 줄 설명
+#     created: YYYY-MM-DD
+categories: {}
