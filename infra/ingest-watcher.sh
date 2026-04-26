@@ -11,7 +11,7 @@ set -euo pipefail
 
 REPO="${SILVA_REPO:-${HOME}/silva-omnium}"
 DEBOUNCE_SECONDS="${SILVA_DEBOUNCE:-5}"
-LOG="${SILVA_LOG:-/var/log/silva-omnium/ingest-watcher.log}"
+LOG="${SILVA_LOG:-${HOME}/Library/Logs/silva-omnium/ingest-watcher.log}"
 COMPOSE_FILE="$REPO/infra/docker-compose.yml"
 ENV_FILE="$REPO/infra/.env"
 
