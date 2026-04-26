@@ -36,6 +36,5 @@ task/
 # Logs
 *.log
 
-# infra runtime artifacts (생성된 Caddyfile 본, 비밀번호 등)
-infra/Caddyfile.runtime
-infra/code-server-config.yaml
+# infra runtime artifacts (비밀번호, 컨테이너 데이터 등)
+infra/.env
