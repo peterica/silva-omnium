@@ -2,6 +2,10 @@
 title: silva-omnium
 aliases: [home, 홈]
 category: _root
+tags: []
+src: []
+updated: '2026-04-24'
+status: stable
 ---
 
 # silva-omnium
