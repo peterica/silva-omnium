@@ -1,29 +1,27 @@
 .PHONY: setup setup-py setup-web ingest ingest-claude ingest-force dev build clean clean-all
 
 VENV := .venv
-PY := $(VENV)/bin/python3
+# venv 가 있으면 venv 의 python3, 없으면 system python3 (= Docker 컨테이너).
+PY := $(if $(wildcard $(VENV)/bin/python3),$(VENV)/bin/python3,python3)
 
 setup: setup-py setup-web
 
-$(PY): scripts/requirements.txt
+setup-py:
 	@test -d $(VENV) || python3 -m venv $(VENV)
-	$(PY) -m pip install --quiet --upgrade pip
-	$(PY) -m pip install --quiet -r scripts/requirements.txt
-	@touch $(PY)
-
-setup-py: $(PY)
+	$(VENV)/bin/python3 -m pip install --quiet --upgrade pip
+	$(VENV)/bin/python3 -m pip install --quiet -r scripts/requirements.txt
 
 setup-web:
 	cd web && npm install
 	@test -L web/src/content/docs || (mkdir -p web/src/content && cd web/src/content && ln -s ../../../wiki docs)
 
-ingest: $(PY)
+ingest:
 	$(PY) scripts/ingest.py
 
-ingest-claude: $(PY)
+ingest-claude:
 	$(PY) scripts/ingest.py --provider claude
 
-ingest-force: $(PY)
+ingest-force:
 	$(PY) scripts/ingest.py --force
 
 dev:
