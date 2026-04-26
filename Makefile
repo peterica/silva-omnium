@@ -1,8 +1,9 @@
 .PHONY: setup setup-py setup-web ingest ingest-claude ingest-force dev build clean clean-all
 
 VENV := .venv
-# venv 가 있으면 venv 의 python3, 없으면 system python3 (= Docker 컨테이너).
-PY := $(if $(wildcard $(VENV)/bin/python3),$(VENV)/bin/python3,python3)
+# venv 의 python3 가 실제로 실행 가능하면 그것, 아니면 system python3 (= Docker
+# 컨테이너 — 호스트 .venv 가 마운트돼도 컨테이너 내부에선 깨진 심볼릭 링크).
+PY := $(shell test -x $(VENV)/bin/python3 && echo $(VENV)/bin/python3 || echo python3)
 
 setup: setup-py setup-web
 

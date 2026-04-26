@@ -130,6 +130,14 @@ launchctl load "$OLLAMA_PLIST"
 
 # 2) docker compose
 (cd "$REPO/infra" && docker compose up -d --build)
+sleep 3
+
+# 2a) node_modules 볼륨 소유권 + Linux 바이너리 설치 (첫 실행 또는 안 되어 있을 때만)
+say "    container web/node_modules 초기화 (idempotent)"
+docker compose -f "$REPO/infra/docker-compose.yml" --env-file "$ENV_FILE" \
+    exec -T --user root code-server chown -R coder:coder /workspace/web/node_modules || true
+docker compose -f "$REPO/infra/docker-compose.yml" --env-file "$ENV_FILE" \
+    exec -T code-server bash -c "cd /workspace/web && test -d node_modules/astro || npm install --silent"
 
 # 3) Watcher launchd
 WATCHER_SRC="$REPO/infra/launchd/com.silva-omnium.ingest-watcher.plist"
