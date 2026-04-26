@@ -1,0 +1,14 @@
+# silva-omnium code-server 설정 템플릿
+# install-mac-mini.sh 가 PASSWORD_PLACEHOLDER 를 무작위 24자로 치환하여
+# ~/.config/code-server/config.yaml 로 복사한다.
+
+bind-addr: 127.0.0.1:8080
+auth: password
+password: PASSWORD_PLACEHOLDER
+cert: false
+disable-telemetry: true
+disable-update-check: true
+
+# /edit/* 경로에서 서비스되도록 Caddy 가 reverse_proxy 하므로
+# code-server 의 base-path 를 /edit 로 강제하지 않는다 — code-server 는
+# 들어온 path 를 자동 인식한다.
