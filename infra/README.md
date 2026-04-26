@@ -1,22 +1,29 @@
 # silva-omnium 자체호스팅 인프라
 
 M1 Mac mini 8GB 에 silva-omnium 을 24/7 호스팅하기 위한 설정 모음.
-Docker 없는 brew + launchd 네이티브 스택.
+**호스트는 ollama·watcher 만, 나머지는 Docker** — sibling 프로젝트와 brew 의존 격리.
 
 ## 구성
 
 ```
-Tailscale Funnel (https://<host>.<tailnet>.ts.net)
-        │
-        ▼
-   Caddy :80
-   ├── /edit/*   →  code-server :8080  (VS Code in browser)
-   └── /         →  web/dist/           (Astro 정적 위키)
-
-   ingest-watcher (fswatch raw/) → make ingest && make build  (백그라운드)
+호스트 (M1 Mac mini, peterseo)
+├── ollama (brew, launchd, OLLAMA_HOST=0.0.0.0:11434)
+├── tailscale (brew cask, GUI + CLI)
+└── ingest-watcher (launchd, fswatch raw/ → docker compose exec)
+                                    │
+                                    ▼
+        ┌─── docker compose (silva-omnium 네트워크) ───┐
+        │                                              │
+   silva-caddy (caddy:2-alpine, host:80)        silva-code-server
+        │                                              │
+        ├── /edit/*  → reverse_proxy ────────────────► :8080 (VS Code in browser)
+        └── /        → file_server /srv (= web/dist 마운트)
+                                                       │
+                                                       └── host.docker.internal:11434 → ollama
+                                                       (workspace = host /Users/peterseo/.../silva-omnium)
 ```
 
-모두 launchd 로 부팅 시 자동 시작 + 죽으면 재시작.
+Tailscale Funnel 이 호스트 :443 → :80 (Caddy 컨테이너) 로 라우팅, 외부 디바이스(회사 노트북, Galaxy S23 등)가 같은 URL 로 접근.
 
 ## 1회 셋업 (M1 mini 에서)
 
@@ -40,16 +47,21 @@ bash infra/install-mac-mini.sh
 ### 로그 확인
 
 ```bash
-tail -f /var/log/silva-omnium/code-server.log
-tail -f /var/log/silva-omnium/caddy.log
+# 컨테이너 로그 (real-time)
+cd ~/peterica/silva-omnium/infra
+docker compose logs -f code-server
+docker compose logs -f caddy
+
+# 호스트 로그 (watcher / ollama)
 tail -f /var/log/silva-omnium/ingest-watcher.log
+tail -f /var/log/silva-omnium/ollama.log
 ```
 
-### 서비스 재시작
+### 컨테이너 재시작
 
 ```bash
-launchctl unload ~/Library/LaunchAgents/com.silva-omnium.code-server.plist
-launchctl load   ~/Library/LaunchAgents/com.silva-omnium.code-server.plist
+cd ~/peterica/silva-omnium/infra
+docker compose restart code-server     # 또는 caddy
 ```
 
 ### 업데이트 받기
@@ -57,53 +69,77 @@ launchctl load   ~/Library/LaunchAgents/com.silva-omnium.code-server.plist
 ```bash
 cd ~/peterica/silva-omnium
 git pull
-# Caddyfile / plist 가 바뀌면:
-bash infra/install-mac-mini.sh
-# Python deps 변경:
-.venv/bin/pip install -r scripts/requirements.txt
-# Astro deps 변경:
-cd web && npm install && cd ..
-make build
+
+# 컨테이너 이미지 / 호스트 도구 변경이면:
+bash infra/install-mac-mini.sh         # 멱등 (.env, password 보존)
+
+# Dockerfile 만 바뀐 경우:
+cd infra && docker compose up -d --build
 ```
 
 ### 멈추기
 
 ```bash
-launchctl unload ~/Library/LaunchAgents/com.silva-omnium.code-server.plist
-launchctl unload ~/Library/LaunchAgents/com.silva-omnium.caddy.plist
+# 컨테이너만:
+cd ~/peterica/silva-omnium/infra
+docker compose down
+
+# 워처도:
 launchctl unload ~/Library/LaunchAgents/com.silva-omnium.ingest-watcher.plist
+
+# Tailscale 외부 노출 끄기:
 sudo tailscale serve reset
+```
+
+### 완전 정리 (재시작 시 자동 시작도 막기)
+
+```bash
+launchctl unload ~/Library/LaunchAgents/com.silva-omnium.*.plist
+rm ~/Library/LaunchAgents/com.silva-omnium.*.plist
+cd ~/peterica/silva-omnium/infra && docker compose down -v
 ```
 
 ## 메모리 사용 (M1 8GB 가이드)
 
 | 프로세스 | 평시 RSS |
 |---|---|
-| code-server (idle) | ~250 MB |
-| caddy | ~30 MB |
-| ingest-watcher (fswatch + bash) | ~10 MB |
-| Astro build (1회 ~5초) | ~600 MB peak |
-| ollama (+ gemma4 9.6GB 추론 시) | ~9 GB peak (모델 로딩) |
+| Docker (OrbStack VM) | ~800 MB |
+| caddy 컨테이너 | ~30 MB |
+| code-server 컨테이너 (idle) | ~250 MB |
+| ingest-watcher (호스트, fswatch+bash) | ~10 MB |
+| Astro build (컨테이너 안, 1회 ~5초) | ~600 MB peak |
+| ollama (호스트) + gemma4 9.6GB 추론 시 | ~9 GB peak (모델 로딩) |
 
 → **gemma4 동시 가동 시 swap 발생 가능.** 8GB 환경에선 작은 모델 권장:
 
 ```bash
-# Phase 1 검증된 대안 (RAM ≤ 5GB)
+# 호스트에서:
 ollama pull exaone3.5:7.8b               # 4.8 GB
-ollama pull hf.co/DevQuasar/kakaocorp.kanana-1.5-8b-instruct-2505-GGUF:Q4_K_M  # 4.9 GB
 ollama pull hf.co/DevQuasar/kakaocorp.kanana-1.5-2.1b-instruct-2505-GGUF:Q4_K_M  # 1.5 GB
 
-# 모델 변경 시 ingest 명령에 --model 옵션 명시
-.venv/bin/python3 scripts/ingest.py --model exaone3.5:7.8b
+# infra/.env 에 OLLAMA_MODEL 추가:
+echo 'OLLAMA_MODEL=exaone3.5:7.8b' >> infra/.env
+cd infra && docker compose up -d         # 재기동으로 적용
 ```
 
-또는 ingest 시점에만 ollama serve 하고 평시엔 stop:
+또는 ingest 시점에만 ollama serve, 평시 stop:
 
 ```bash
-brew services stop ollama       # 평시
-brew services start ollama      # ingest 직전
+launchctl unload ~/Library/LaunchAgents/com.silva-omnium.ollama.plist     # 평시
+launchctl load ~/Library/LaunchAgents/com.silva-omnium.ollama.plist       # ingest 직전
 ```
 
 ## 트러블슈팅
 
-`infra/tailscale-setup.md` 의 트러블슈팅 섹션 참조.
+`infra/tailscale-setup.md` 트러블슈팅 섹션 참조. 추가 항목:
+
+- **컨테이너에서 ollama 못 찾음** (`host.docker.internal: name resolution failed`):
+  - install 스크립트가 ollama plist 를 등록했는지 확인: `launchctl list | grep ollama`
+  - `lsof -nP -iTCP:11434 -sTCP:LISTEN` — `*:11434` 표시 필요 (127.0.0.1 만이면 OLLAMA_HOST=0.0.0.0 적용 안 됨)
+  - 컨테이너 안에서: `docker compose exec code-server curl -s http://host.docker.internal:11434/api/version`
+- **Docker compose 가 SILVA_REPO 못 읽음**:
+  - `infra/.env` 존재 + 경로 절대 경로인지 확인
+  - 명시적: `docker compose --env-file ../.env up`
+- **Watcher 가 동작 안 함**:
+  - `tail -f /var/log/silva-omnium/ingest-watcher.log` — `FATAL: docker not installed` 등 표시
+  - launchctl: `launchctl list com.silva-omnium.ingest-watcher`
