@@ -1,0 +1,32 @@
+# silva-omnium 용 code-server 이미지.
+# 베이스 이미지에 python3 + node 20 + make 를 추가해 컨테이너 안에서
+# `make ingest && make build` 가 그대로 동작하게 한다.
+
+FROM codercom/code-server:latest
+
+USER root
+
+# 시스템 도구
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ca-certificates curl gnupg \
+        python3 python3-venv python3-pip \
+        make git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Node 20 (NodeSource 공식 저장소)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# silva-omnium python deps 사전 설치 (이미지 빌드 시 한 번)
+COPY scripts/requirements.txt /tmp/requirements.txt
+RUN python3 -m pip install --break-system-packages --no-cache-dir -r /tmp/requirements.txt \
+    && rm /tmp/requirements.txt
+
+USER coder
+WORKDIR /workspace
+
+# 베이스 이미지의 ENTRYPOINT(/usr/bin/entrypoint.sh) 와 CMD(code-server) 는 그대로 사용.
+# config 는 ${HOME}/.config/code-server/config.yaml 에서 자동 로드되며, 호스트
+# ~/.config/code-server 디렉토리를 컨테이너의 /home/coder/.config/code-server 로
+# bind mount 한다 (docker-compose.yml).

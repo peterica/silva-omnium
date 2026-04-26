@@ -1,31 +1,30 @@
-# silva-omnium reverse proxy
+# silva-omnium reverse proxy (Docker compose 컨테이너 안)
 #
-# 호스트네임은 install 시 환경변수로 치환되거나, Tailscale Funnel 의 자동
-# hostname 을 그대로 쓴다. localhost 는 로컬 테스트용.
+# - 호스트 :80 → caddy 컨테이너 → /edit/* code-server, / 정적
+# - Tailscale Funnel 이 호스트 :443 (HTTPS) → :80 (Caddy) 로 라우팅
+# - root /srv 는 컨테이너 안 경로. 호스트 web/dist 가 마운트됨
 {
-	# Tailscale 이 TLS 종료를 처리하므로 Caddy 는 평문 HTTP 만.
-	# 외부 → Funnel(HTTPS) → localhost:80(HTTP)
 	auto_https off
 }
 
 :80 {
-	# code-server: VS Code in browser
+	# code-server: VS Code in browser (Docker 네트워크 DNS)
 	handle /edit/* {
-		reverse_proxy localhost:8080
+		reverse_proxy code-server:8080
 	}
 	handle /edit {
 		redir /edit/ permanent
 	}
 
-	# 정적 위키 (Astro build 산출물)
+	# 정적 위키 (호스트의 web/dist 가 /srv 로 마운트됨)
 	handle {
-		root * /Users/silva/silva-omnium/web/dist
+		root * /srv
 		try_files {path} {path}/index.html /404.html
 		file_server
 	}
 
 	log {
-		output file /var/log/silva-omnium/caddy-access.log
+		output stdout
 		format console
 	}
 }
