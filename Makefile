@@ -1,4 +1,4 @@
-.PHONY: setup setup-py setup-web ingest ingest-claude ingest-force dev build clean clean-all
+.PHONY: setup setup-py setup-web ingest ingest-claude ingest-claude-cli ingest-force dev build clean clean-all
 
 VENV := .venv
 # venv 의 python3 가 실제로 실행 가능하면 그것, 아니면 system python3 (= Docker
@@ -21,6 +21,10 @@ ingest:
 
 ingest-claude:
 	$(PY) scripts/ingest.py --provider claude
+
+# claude CLI (구독 OAuth 사용 — API key 청구 없음, 컨테이너에서만 동작)
+ingest-claude-cli:
+	$(PY) scripts/ingest.py --provider claude-cli
 
 ingest-force:
 	$(PY) scripts/ingest.py --force

@@ -286,7 +286,9 @@ def apply_change(
 def main() -> int:
     parser = argparse.ArgumentParser(description="silva-omnium ingest pipeline")
     parser.add_argument(
-        "--provider", default="ollama", choices=["ollama", "claude"]
+        "--provider",
+        default="ollama",
+        choices=["ollama", "claude", "claude-cli"],
     )
     parser.add_argument(
         "--model", default=None, help="override default model for the provider"
