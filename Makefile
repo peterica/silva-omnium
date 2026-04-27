@@ -1,4 +1,4 @@
-.PHONY: setup setup-py setup-web ingest ingest-claude ingest-claude-cli ingest-force dev build clean clean-all
+.PHONY: setup setup-py setup-web ingest ingest-claude ingest-claude-cli ingest-ollama ingest-force dev build clean clean-all
 
 VENV := .venv
 # venv 의 python3 가 실제로 실행 가능하면 그것, 아니면 system python3 (= Docker
@@ -16,18 +16,25 @@ setup-web:
 	cd web && npm install
 	@test -L web/src/content/docs || (mkdir -p web/src/content && cd web/src/content && ln -s ../../../wiki docs)
 
+# 기본 ingest = claude-cli (구독 OAuth, 추가 청구 없음, 품질 ↑).
+# watcher 도 이 타겟을 호출하므로 자동 ingest 도 같이 전환됨.
 ingest:
-	$(PY) scripts/ingest.py
+	$(PY) scripts/ingest.py --provider claude-cli
 
+# Anthropic API key 직접 사용 (per-token 청구)
 ingest-claude:
 	$(PY) scripts/ingest.py --provider claude
 
-# claude CLI (구독 OAuth 사용 — API key 청구 없음, 컨테이너에서만 동작)
+# 명시적 claude-cli (default 와 동일 — 명확성용)
 ingest-claude-cli:
 	$(PY) scripts/ingest.py --provider claude-cli
 
+# 로컬 ollama (오프라인·빠른 실험용)
+ingest-ollama:
+	$(PY) scripts/ingest.py --provider ollama
+
 ingest-force:
-	$(PY) scripts/ingest.py --force
+	$(PY) scripts/ingest.py --force --provider claude-cli
 
 dev:
 	cd web && npm run dev
