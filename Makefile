@@ -1,29 +1,28 @@
 .PHONY: setup setup-py setup-web ingest ingest-claude ingest-force dev build clean clean-all
 
 VENV := .venv
-PY := $(VENV)/bin/python3
+# venv 의 python3 가 실제로 실행 가능하면 그것, 아니면 system python3 (= Docker
+# 컨테이너 — 호스트 .venv 가 마운트돼도 컨테이너 내부에선 깨진 심볼릭 링크).
+PY := $(shell test -x $(VENV)/bin/python3 && echo $(VENV)/bin/python3 || echo python3)
 
 setup: setup-py setup-web
 
-$(PY): scripts/requirements.txt
+setup-py:
 	@test -d $(VENV) || python3 -m venv $(VENV)
-	$(PY) -m pip install --quiet --upgrade pip
-	$(PY) -m pip install --quiet -r scripts/requirements.txt
-	@touch $(PY)
-
-setup-py: $(PY)
+	$(VENV)/bin/python3 -m pip install --quiet --upgrade pip
+	$(VENV)/bin/python3 -m pip install --quiet -r scripts/requirements.txt
 
 setup-web:
 	cd web && npm install
 	@test -L web/src/content/docs || (mkdir -p web/src/content && cd web/src/content && ln -s ../../../wiki docs)
 
-ingest: $(PY)
+ingest:
 	$(PY) scripts/ingest.py
 
-ingest-claude: $(PY)
+ingest-claude:
 	$(PY) scripts/ingest.py --provider claude
 
-ingest-force: $(PY)
+ingest-force:
 	$(PY) scripts/ingest.py --force
 
 dev:

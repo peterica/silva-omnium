@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.silva-omnium.ingest-watcher</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>__REPO__/infra/ingest-watcher.sh</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <!-- 워처가 docker/fswatch/.env 미존재 시 hard exit → KeepAlive 가 즉시 재시작.
+         ThrottleInterval=30 으로 최소 30 초 간격을 강제해 재시작 폭주·로그 폭증 방지.
+         (Codex 리뷰 P2#4) -->
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+    <key>StandardOutPath</key>
+    <string>__HOME__/Library/Logs/silva-omnium/ingest-watcher-launchd.log</string>
+    <key>StandardErrorPath</key>
+    <string>__HOME__/Library/Logs/silva-omnium/ingest-watcher-launchd.err</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>SILVA_REPO</key>
+        <string>__REPO__</string>
+        <key>HOME</key>
+        <string>__HOME__</string>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/bin:/bin</string>
+    </dict>
+</dict>
+</plist>

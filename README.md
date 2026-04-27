@@ -30,12 +30,18 @@ raw/ ──(make ingest)──▶ wiki/ ──▶ [Astro Starlight 웹] + [Obsid
 - **Claude**: 요약, 교차참조, 인용, 모순 탐지, 파일 정리
 - **위키**: 쌓입니다
 
+## 자체호스팅 (선택)
+
+M1 Mac mini 등 상시 머신에서 silva-omnium 을 호스팅하면 어디서든 웹 브라우저로 편집·열람할 수 있다.
+
+- 웹 편집기: code-server (VS Code in browser) — 트리·에디터·미리보기·파일 ops
+- 정적 사이트: Astro Starlight `dist/` 를 Caddy 가 서빙
+- 자동 ingest: `raw/` 변경 시 fswatch 가 `make ingest && make build` 자동 실행
+- 외부 접근: Tailscale Funnel — 공개 URL, 클라이언트 설치 불필요
+
+셋업: `infra/README.md` 참조.
+
 ## 상태
 
-초기 skeleton. 다음 작업 예정:
-
-- [ ] ingest 스크립트 (`scripts/ingest.py`) — raw 변경분 → Claude → wiki 업데이트
-- [ ] frontmatter 스키마 (category / tags / aliases / src)
-- [ ] Astro Starlight 웹 뷰 (`web/`) — 좌=계층 / 중=본문 / 우=TOC
-- [ ] Obsidian vault 설정 — `wiki/` 루트, 그래프 필터
-- [ ] Makefile — `make ingest` / `make dev` / `make build`
+- Phase 1 (ingest + Astro 빌드 + Obsidian vault + Makefile): 완료
+- Phase 2 (M1 mini 자체호스팅): 진행 중

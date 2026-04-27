@@ -31,6 +31,10 @@ dist/
 # Claude Code 로컬 설정
 .claude/
 claudedocs/
+task/
 
 # Logs
 *.log
+
+# infra runtime artifacts (비밀번호, 컨테이너 데이터 등)
+infra/.env

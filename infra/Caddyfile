@@ -1,0 +1,37 @@
+# silva-omnium reverse proxy (Docker compose 컨테이너 안)
+#
+# - 호스트 :80 → caddy 컨테이너 → /edit/* code-server, / 정적
+# - Tailscale Funnel 이 호스트 :443 (HTTPS) → :80 (Caddy) 로 라우팅
+# - root /srv 는 컨테이너 안 경로. 호스트 web/dist 가 마운트됨
+{
+	auto_https off
+}
+
+:80 {
+	# code-server: VS Code in browser
+	# handle_path 가 /edit 접두를 strip → code-server 는 자기가 root 인 줄 안다.
+	# X-Forwarded-Prefix 로 code-server 가 생성하는 redirect/link 가 /edit/... 로
+	# 다시 뒤에 붙도록 알려준다.
+	handle_path /edit/* {
+		reverse_proxy code-server:8080 {
+			header_up X-Forwarded-Proto https
+			header_up X-Forwarded-Host {host}
+			header_up X-Forwarded-Prefix /edit
+		}
+	}
+	handle /edit {
+		redir /edit/ permanent
+	}
+
+	# 정적 위키 (호스트의 web/dist 가 /srv 로 마운트됨)
+	handle {
+		root * /srv
+		try_files {path} {path}/index.html /404.html
+		file_server
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}
