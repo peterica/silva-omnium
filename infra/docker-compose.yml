@@ -23,11 +23,16 @@ services:
       - ${SILVA_REPO:?SILVA_REPO must be set in infra/.env}:/workspace
       # Linux 바이너리(rollup 등) 가 호스트 macOS 와 충돌하지 않도록 격리
       - silva-node-modules:/workspace/web/node_modules
+      # Claude Code CLI 인증·세션 보존 (컨테이너 재빌드해도 휘발 안 됨)
+      - silva-claude-home:/home/coder/.claude
     environment:
       - PASSWORD=${SILVA_CODE_SERVER_PASSWORD:?SILVA_CODE_SERVER_PASSWORD must be set in infra/.env}
       - BIND_ADDR=0.0.0.0:8080
       - OLLAMA_HOST=http://host.docker.internal:11434
       - OLLAMA_MODEL=${OLLAMA_MODEL:-gemma4:latest}
+      # Claude Code (선택): infra/.env 에 ANTHROPIC_API_KEY 있으면 주입,
+      # 없으면 빈 값 — claude 명령은 OAuth (브라우저 코드) 로 폴백.
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
     expose:
       - "8080"
     extra_hosts:
@@ -59,3 +64,4 @@ volumes:
   silva-caddy-data:
   silva-caddy-config:
   silva-node-modules:
+  silva-claude-home:

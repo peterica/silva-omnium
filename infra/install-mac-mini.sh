@@ -151,10 +151,13 @@ launchctl unload "$WATCHER_DST" 2>/dev/null || true
 launchctl load "$WATCHER_DST"
 say "    loaded watcher: $WATCHER_DST"
 
-# 4) 첫 build (선택: wiki/ 가 비어있지 않다면 페이지 1개라도 빌드)
-say "    첫 build (컨테이너 안)"
-docker compose -f "$REPO/infra/docker-compose.yml" --env-file "$ENV_FILE" \
-    exec -T code-server bash -c "cd /workspace && make build" || warn "build 실패 (수동 실행 권장)"
+# 4) 첫 build — 필수 (게이트). 실패 시 fatal — 빈 dist 로 Caddy 가 404 만 응답하는
+#    "성공처럼 보이는 실패" 방지. (Codex 리뷰 P1#3)
+say "    첫 build (컨테이너 안) — 필수"
+if ! docker compose -f "$REPO/infra/docker-compose.yml" --env-file "$ENV_FILE" \
+        exec -T code-server bash -c "cd /workspace && make build"; then
+    fatal "첫 build 실패. 컨테이너 로그 확인: docker compose -f $REPO/infra/docker-compose.yml logs code-server"
+fi
 
 cat <<NEXT
 
