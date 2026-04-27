@@ -113,6 +113,19 @@ def render_frontmatter(meta: dict[str, Any], body: str) -> str:
     return f"---\n{fm}---\n\n{body}"
 
 
+def strip_leading_h1(body: str) -> str:
+    """Remove a leading H1 heading from body if present.
+
+    Starlight renders frontmatter `title` as the page H1, so an additional
+    leading `# ...` in the body would duplicate the title visually. We strip
+    such a heading regardless of whether it matches the title (defense in
+    depth — the prompt also forbids it, but small models often ignore).
+    """
+    import re
+
+    return re.sub(r"^\s*#\s+[^\n]+\n+", "", body, count=1)
+
+
 def collect_raw_files() -> list[Path]:
     return sorted(p for p in RAW_DIR.rglob("*.md") if p.is_file())
 
@@ -235,7 +248,7 @@ def apply_change(
 
     raw_rel = raw_path.relative_to(REPO_ROOT).as_posix()
     src_append = resp.get("src_append") or [raw_rel]
-    body_section = resp["body"]
+    body_section = strip_leading_h1(resp["body"])
 
     if resp["action"] == "new" or not target_path.exists():
         meta: dict[str, Any] = {

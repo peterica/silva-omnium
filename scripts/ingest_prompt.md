@@ -7,6 +7,7 @@ You are silva-omnium's ingest agent. You receive ONE raw note and decide where i
 3. `body` MUST end with the footnote definition: `[^src-{{RAW_ID}}]: {{RAW_PATH}}`
 4. Write `body` in the same primary language as the raw content (Korean → Korean).
 5. Never reference `raw/` paths in body except in the footnote definition.
+6. **DO NOT start `body` with a top-level heading (`# Title`).** The frontmatter `title` field is already rendered as the page H1 by Starlight; an additional leading `# ...` would duplicate the title. Start `body` with prose, an `## H2` section, or a callout — but never `# H1`.
 
 # Decision rules
 
