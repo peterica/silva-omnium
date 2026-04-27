@@ -23,6 +23,11 @@ COPY scripts/requirements.txt /tmp/requirements.txt
 RUN python3 -m pip install --break-system-packages --no-cache-dir -r /tmp/requirements.txt \
     && rm /tmp/requirements.txt
 
+# Claude Code CLI — 컨테이너 안에서 직접 `claude` 명령 사용 가능.
+# 인증은 첫 실행 시 ANTHROPIC_API_KEY env 또는 OAuth (브라우저 코드 페어링).
+# 인증 캐시는 ~/.claude → docker-compose.yml 의 silva-claude-home volume 으로 보존.
+RUN npm install -g @anthropic-ai/claude-code
+
 # macOS 호스트 사용자 UID 501 과 일치시켜 bind mount 파일 양방향 쓰기 권한 확보.
 # 베이스 이미지의 coder 사용자(UID 1000) 를 501 로 재설정하고 home 권한도 갱신.
 # (debian 에서 UID 501 은 보통 비어있음 — 충돌 시 502 시도)

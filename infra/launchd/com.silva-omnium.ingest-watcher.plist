@@ -13,6 +13,11 @@
     <true/>
     <key>KeepAlive</key>
     <true/>
+    <!-- 워처가 docker/fswatch/.env 미존재 시 hard exit → KeepAlive 가 즉시 재시작.
+         ThrottleInterval=30 으로 최소 30 초 간격을 강제해 재시작 폭주·로그 폭증 방지.
+         (Codex 리뷰 P2#4) -->
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
     <key>StandardOutPath</key>
     <string>__HOME__/Library/Logs/silva-omnium/ingest-watcher-launchd.log</string>
     <key>StandardErrorPath</key>

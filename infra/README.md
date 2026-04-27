@@ -71,11 +71,16 @@ cd ~/peterica/silva-omnium
 git pull
 
 # 컨테이너 이미지 / 호스트 도구 변경이면:
-bash infra/install-mac-mini.sh         # 멱등 (.env, password 보존)
+bash infra/install-mac-mini.sh         # 멱등 (.env, password 보존, 첫 build 까지)
 
 # Dockerfile 만 바뀐 경우:
 cd infra && docker compose up -d --build
+docker compose --env-file .env exec -T code-server bash -c "cd /workspace && make build"
 ```
+
+> **중요**: `git pull` 만으로는 `web/dist` 가 갱신되지 않는다. Watcher 는 `raw/` 와
+> `wiki/_meta` 변경만 감지하므로, `web/`·테마·Astro 설정 등이 바뀌면 위처럼
+> 명시적 build 필요. 안 그러면 위키가 stale 한 상태로 보임. (Codex 리뷰 P2#7)
 
 ### 멈추기
 
@@ -128,6 +133,26 @@ cd infra && docker compose up -d         # 재기동으로 적용
 launchctl unload ~/Library/LaunchAgents/com.silva-omnium.ollama.plist     # 평시
 launchctl load ~/Library/LaunchAgents/com.silva-omnium.ollama.plist       # ingest 직전
 ```
+
+## Claude Code in container
+
+이미지에 `@anthropic-ai/claude-code` 사전 설치돼 있음. code-server 통합 터미널에서 바로:
+
+```bash
+claude        # 첫 실행 시 인증 (브라우저 코드 또는 ANTHROPIC_API_KEY env)
+```
+
+인증 캐시는 named volume `silva-claude-home` 에 보존돼 컨테이너 재빌드해도 휘발 안 됨.
+
+API key 방식 사용 시 `infra/.env` 에 추가:
+
+```
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+후 `cd infra && docker compose --env-file .env up -d` 로 재기동. compose 가 자동으로 컨테이너에 주입.
+
+이 워크플로우의 가치: 회사 노트북 브라우저에서 code-server 열고 → 통합 터미널 → `claude` → 모든 git push·AI 호출이 mini 의 네트워크에서 발생.
 
 ## 트러블슈팅
 
