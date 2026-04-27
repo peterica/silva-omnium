@@ -6,6 +6,7 @@ export default defineConfig({
     starlight({
       title: 'silva-omnium',
       description: '모든 것이 쌓이는 개인 숲',
+      customCss: ['./src/styles/custom.css'],
     }),
   ],
 });

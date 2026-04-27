@@ -1,0 +1,15 @@
+/* silva-omnium 커스텀 스타일.
+ * Starlight 의 기본 H1 (페이지 타이틀) 가 너무 커서 축소.
+ * Starlight 는 :root 의 --sl-text-h1 변수를 H1 폰트 사이즈로 사용 — 이걸 덮어쓰면
+ * 페이지 타이틀과 markdown 안 H1 모두 영향을 받는다.
+ */
+
+:root {
+  --sl-text-h1: 1.5rem;
+}
+
+@media (min-width: 50em) {
+  :root {
+    --sl-text-h1: 1.875rem;
+  }
+}
