@@ -2,6 +2,15 @@
 
 > 모든 것이 쌓이는 개인 지식 숲.
 
+<br>
+
+<p align="center">
+  <img src="docs/images/02.png" alt="Astro Starlight 로 빌드된 위키" width="760">
+  <br><sub><em>Astro Starlight 로 빌드된 위키 — 사이드바 카테고리는 ingest 가 자동 분류한다</em></sub>
+</p>
+
+<br>
+
 ## 왜
 
 LLM 으로 문서를 다루는 대부분의 방식은 질문할 때마다 지식을 처음부터 재발견합니다. 같은 문서에 10번 질문하면 → 10번 재발견.
@@ -23,6 +32,33 @@ raw/ ──(watcher / make ingest)──▶ wiki/ ──(make build)──▶ [A
 - **LLM** (Ollama 또는 Claude): 요약, 교차참조, 인용 부착, 모순 탐지, frontmatter·카테고리 자동 분류
 - **위키**: 시간에 따라 쌓임. 같은 주제가 다시 들어오면 기존 페이지를 갱신
 
+**1. raw/ 입력** — 사용자가 떨어뜨리는 원본 메모. 형식·길이 자유, 정리 안 돼 있어도 됨.
+
+<p align="center">
+  <img src="docs/images/05.png" alt="raw 원본 메모" width="680">
+  <br><sub><em>raw/2026/ 에 떨어진 사용자 원본 메모 — 이대로 ingest 입력</em></sub>
+</p>
+
+<br>
+
+**2. wiki/ 출력** — ingest 후 frontmatter·카테고리·출처 각주가 붙어 영속 위키 페이지로 저장.
+
+<p align="center">
+  <img src="docs/images/01.png" alt="ingest 결과 wiki 페이지" width="760">
+  <br><sub><em>좌: raw/wiki 트리 · 가운데: wiki 마크다운(frontmatter + 각주) · 우: 렌더 프리뷰</em></sub>
+</p>
+
+<br>
+
+**3. Obsidian 그래프** — 페이지가 쌓일수록 주제 간 연결이 그래프로 드러남.
+
+<p align="center">
+  <img src="docs/images/07.png" alt="Obsidian 그래프 뷰" width="640">
+  <br><sub><em>wiki 페이지가 노드로, 교차 참조가 엣지로 시각화</em></sub>
+</p>
+
+<br>
+
 ## Quick start
 
 ```bash
@@ -43,6 +79,24 @@ make build && make dev    # http://localhost:4321
 
 `make ingest-claude` 로 Claude API provider 도 사용 가능 (`ANTHROPIC_API_KEY` 필요).
 
+> 로컬 / 자체호스팅 두 갈래의 차이와 Docker 가 등장하는 이유는 [`docs/USER_GUIDE.md`](./docs/USER_GUIDE.md) 참고.
+
+<br>
+
+<p align="center">
+  <img src="docs/images/06.png" alt="make ingest 실행 로그" width="760">
+  <br><sub><em>make ingest — raw 메모가 카테고리별 wiki 페이지로 분류·생성된다</em></sub>
+</p>
+
+<br>
+
+<p align="center">
+  <img src="docs/images/03.png" alt="make build 실행 로그" width="760">
+  <br><sub><em>이어서 make build — Astro Starlight 가 wiki/ 를 정적 사이트로 빌드</em></sub>
+</p>
+
+<br>
+
 ## 구조
 
 ```
@@ -57,6 +111,13 @@ silva-omnium/
 └── docs/                 설계 문서·plan
 ```
 
+<p align="center">
+  <img src="docs/images/04.png" alt="다섯 축 디렉토리 — raw / wiki / scripts / web / infra" width="280">
+  <br><sub><em>다섯 축 디렉토리 — raw / wiki / scripts / web / infra</em></sub>
+</p>
+
+<br>
+
 ## 자체호스팅 (선택)
 
 상시 머신 (예: M1 Mac mini) 에 silva-omnium 을 24/7 띄우면 어디서든 웹 브라우저로 편집·열람·AI 협업이 가능합니다.
@@ -66,7 +127,7 @@ silva-omnium/
 - 자동 ingest: `raw/` 변경 시 fswatch → docker compose exec → `make ingest && make build`
 - 외부 접근: **Tailscale Funnel** — 공개 URL, 도메인·포트포워딩 불필요
 
-상세 셋업: [`infra/README.md`](./infra/README.md).
+상세 셋업: [`infra/README.md`](./infra/README.md). 멘탈 모델(저장소가 어디에 사는지·Docker 가 무엇을 담는지) 부터 보려면 [`docs/USER_GUIDE.md`](./docs/USER_GUIDE.md).
 
 ## Tech stack
 
